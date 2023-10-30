@@ -1,70 +1,108 @@
-import pygame 
+
+import pygame
 import pymunk
 import pymunk.pygame_util
 
 pygame.init()
 
-SCREEN_WIDTH=1200
-SCREEN_HEIGHTT= 678
+SCREEN_WIDTH  =1200
+SCREEN_HEIGHT = 678
 
-#GAME WINDOW
-screen=pygame.display.set_mode(( SCREEN_WIDTH, SCREEN_HEIGHTT ))
+# GAME WINDOW
+screen =pygame.display.set_mode(( SCREEN_WIDTH, SCREEN_HEIGHT ))
 pygame.display.set_caption('pool')
 
-#pymunk space
+# pymunk space
 space = pymunk.Space()
 static_body = space.static_body
 draw_OPTION = pymunk.pygame_util.DrawOptions(screen)
 
-#clock
+# clock
 clock = pygame.time.Clock( )
-FPS=120
+FPS =120
 
-#colour
-BG = (50,50,50)
+#game variaable
+dia = 36
 
-#load images
-table_images = pygame.image.load("pygame/pool/image/table.PNG").convert_alpha()
+# colour
+BG = (50 ,50 ,50)
 
-#function fro creating baals
+# load images
+table_image = pygame.image.load("pygame/pool/image/table.PNG").convert_alpha()
+ball_images = []
+for i in range (1, 17):
+   ball_image = pygame.image.load('pygame/pool/image/ball 1.png').convert_alpha()
+   ball_images.append(ball_images)
+
+# function fro creating baals
 def creat_ball(radius, pos):
     body = pymunk.Body()
     body.position = pos
     shape = pymunk.Circle(body, radius)
     shape.mass = 5
-    #use pivoit joint to add friction
-    piviot = pymunk.PivotJoint(static_body, body, (0, 0),(0,0))
+    shape.elasticity = 0.8
+    # use pivoit joint to add friction
+    piviot = pymunk.PivotJoint(static_body, body, (0, 0) ,(0 ,0))
     piviot.max_bias = 0 # disable joint corrction
     piviot.max_force = 1000 # emulate linear friction
 
     space.add(body, shape, piviot)
     return shape
-
-new_ball = creat_ball(25,(300,300))
-
-
-cue_ball = creat_ball(25, (600, 310))
+#set up 
+balls = []
+rows = 5
+#potting balls
+for col in range(5):
+   for row in range(rows):
+    pos = (250+(col* (dia + 1)), 267 + (row * (dia + 1))+(col * dia / 2))
+    new_ball = creat_ball(dia/2, pos)
+    balls.append(new_ball)
+   rows -= 1
+#cue ball
+pos=(888, SCREEN_HEIGHT/2)
+cue_ball = creat_ball(dia/2, pos)
+balls.append(cue_ball)
+#creaat pool table cushions
+cushions = [
+  [(88, 56), (109, 77), (555, 77), (564, 56)],
+  [(621, 56), (630, 77), (1081, 77), (1102, 56)],
+  [(89, 621), (110, 600),(556, 600), (564, 621)],
+  [(622, 621), (630, 600), (1081, 600), (1102, 621)],
+  [(56, 96), (77, 117), (77, 560), (56, 581)],
+  [(1143, 96), (1122, 117), (1122, 560), (1143, 581)]
+]
  # function for creating cushion
- 
+def  creat_cushion(poly_dims):
+ body = pymunk.Body(body_type = pymunk.Body.STATIC)
+ body.position = ((0,0))
+ shape = pymunk.Poly(body, poly_dims)
+ shape.elasticity = 0.8
 
-#game loop
-run= True
+ space.add(body, shape)
+
+for c in cushions:
+ creat_cushion(c)
+
+
+# game loop
+ run= True
 while run:
     clock.tick(FPS)
-    space.step(1/FPS )
+    space.step( 1 /FPS )
 
-    #fill background
+    # fill background
     screen.fill(BG)
 
-
-    #draw pooltable
-    screen.blit(table_images, (0,0))
-
-
-    #event handler
+    # draw pooltable
+    screen.blit(table_image, (0 ,0))
+    #draw pool balls
+    for  i, ball in enumerate(balls):
+       
+      screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
+    # event handler
     for event in pygame.event.get():
-        if event.type== pygame.MOUSEBUTTONDOWN:
-            cue_ball.body.apply_impulse_at_local_point((-1500, 0),(0,0))
+        if event.type==pygame.MOUSEBUTTONDOWN:
+            cue_ball.body.apply_impulse_at_local_point((-1500, 0) ,(0 ,0))
         if event.type == pygame.QUIT:
             run= False
 
@@ -73,5 +111,7 @@ while run:
 
 
 pygame.quit
+
+
 
 
